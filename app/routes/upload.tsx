@@ -93,6 +93,13 @@ const Upload = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Check authentication before processing
+    if (!auth.isAuthenticated) {
+      navigate("/auth?next=/upload");
+      return;
+    }
+
     const form = e.currentTarget.closest("form");
     if (!form) return;
     const formData = new FormData(form);
