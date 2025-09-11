@@ -2,6 +2,9 @@ import type { Route } from "./+types/home";
 import Navbar from "../components/navbar";
 import ResumeCarousel from "../components/ResumeCarousel";
 import Footer from "../components/footer";
+import { usePuterStore } from "~/lib/puter";
+import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,6 +18,13 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const { auth } = usePuterStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!auth.isAuthenticated) navigate("/auth?next=/");
+  }, [auth.isAuthenticated]);
+
   return (
     <main className="bg-[url('/images/bgmain.jpg')] bg-cover bg-center bg-no-repeat min-h-screen flex flex-col">
       <Navbar />

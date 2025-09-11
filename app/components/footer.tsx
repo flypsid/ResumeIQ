@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 const Footer = () => {
   return (
-    <footer className="bg-white border-t-2 border-gray-200 py-4 px-4 sticky bottom-0 z-10">
+    <footer className="bg-white border-t-2 border-gray-200 py-4 px-4 ">
       <div className="max-w-6xl mx-auto">
         {/* Tout sur une ligne */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -32,7 +32,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
               >
-                Raoul Flypsid
+                RF
               </a>
             </span>
 
