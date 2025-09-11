@@ -7,10 +7,11 @@ interface FileUploaderProps {
 }
 
 const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0] || null;
-
+      setSelectedFile(file);
       onFileSelect?.(file);
     },
     [onFileSelect]
@@ -26,7 +27,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
       maxSize: maxFileSize,
     });
 
-  const file = acceptedFiles[0] || null;
+  const file = selectedFile;
 
   return (
     <div className="w-full">
@@ -63,6 +64,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
                 className="p-2 hover:bg-red-100 rounded-full transition-colors duration-200"
                 onClick={(e) => {
                   e.stopPropagation();
+                  setSelectedFile(null);
                   onFileSelect?.(null);
                 }}
               >

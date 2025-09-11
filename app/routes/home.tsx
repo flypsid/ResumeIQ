@@ -2,7 +2,7 @@ import type { Route } from "./+types/home";
 import Navbar from "../components/navbar";
 import ResumeCarousel from "../components/ResumeCarousel";
 import Footer from "../components/footer";
-import { usePuterStore } from "~/lib/puter";
+import { usePuterStore } from "../lib/puter";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 
