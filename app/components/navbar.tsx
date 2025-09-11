@@ -24,7 +24,7 @@ const Navbar = () => {
       </Link>
       <button
         onClick={handleUploadClick}
-        className="bg-gray-800 hover:bg-gray-900 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors text-sm sm:text-base"
+        className="cursor-pointer bg-gray-800 hover:bg-gray-900 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors text-sm sm:text-base"
       >
         Upload Resume
       </button>

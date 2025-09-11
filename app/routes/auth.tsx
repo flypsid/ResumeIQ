@@ -48,14 +48,14 @@ const Auth = () => {
               <>
                 {auth.isAuthenticated ? (
                   <button
-                    className="w-full bg-red-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-red-700 hover:scale-105 transition duration-200"
+                    className="cursor-pointer w-full bg-red-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-red-700 hover:scale-105 transition duration-200"
                     onClick={auth.signOut}
                   >
                     <p>Log Out</p>
                   </button>
                 ) : (
                   <button
-                    className="w-full bg-slate-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-slate-700 hover:scale-105 transition duration-200"
+                    className="cursor-pointer w-full bg-slate-900 text-white py-3 px-6 rounded-xl font-semibold hover:bg-slate-700 hover:scale-105 transition duration-200"
                     onClick={auth.signIn}
                   >
                     <p>Log In</p>
