@@ -22,11 +22,16 @@ const Auth = () => {
       <div className="gradient-border shadow-lg">
         <section className="flex flex-col gap-8 bg-white rounded-2xl p-10">
           <div className="flex justify-center">
-            <img
-              src="/images/logo.jpg"
-              alt="ResumeIQ Logo"
-              className="w-40 h-15 "
-            />
+            <button
+              onClick={() => navigate("/")}
+              className="cursor-pointer transition-transform hover:scale-105"
+            >
+              <img
+                src="/images/logo.jpg"
+                alt="ResumeIQ Logo"
+                className="w-40 h-15"
+              />
+            </button>
           </div>
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="text-3xl font-bold text-gray-800">
