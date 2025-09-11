@@ -61,7 +61,7 @@ const CategoryContent = ({
 }) => {
   return (
     <div className="flex flex-col gap-4 items-center w-full">
-      <div className="bg-gray-50 w-full rounded-lg px-5 py-4 grid grid-cols-2 gap-4">
+      <div className="bg-gray-50 w-full rounded-lg px-4 sm:px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {tips.map((tip, index) => (
           <div className="flex flex-row gap-2 items-center" key={index}>
             <img
@@ -71,7 +71,7 @@ const CategoryContent = ({
               alt="score"
               className="size-5"
             />
-            <p className="text-xl text-gray-500 ">{tip.tip}</p>
+            <p className="text-lg sm:text-xl text-gray-500 ">{tip.tip}</p>
           </div>
         ))}
       </div>
@@ -96,7 +96,7 @@ const CategoryContent = ({
                 alt="score"
                 className="size-5"
               />
-              <p className="text-xl font-semibold">{tip.tip}</p>
+              <p className="text-lg sm:text-xl font-semibold">{tip.tip}</p>
             </div>
             <p>{tip.explanation}</p>
           </div>

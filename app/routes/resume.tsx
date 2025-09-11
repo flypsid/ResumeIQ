@@ -52,19 +52,25 @@ const Resume = () => {
 
   return (
     <main className="!pt-0">
-      <nav className="bg-white shadow-lg p-6 border-b">
+      <nav className="bg-white shadow-lg p-4 sm:p-6 border-b">
         <Link
           to="/"
-          className="flex items-center gap-3 text-gray-700 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-2 sm:gap-3 text-gray-700 hover:text-gray-900 transition-colors"
         >
-          <img src="/icons/back.svg" alt="back" className="w-5 h-5" />
-          <span className="text-base font-semibold">Back to Homepage</span>
+          <img
+            src="/icons/back.svg"
+            alt="back"
+            className="w-4 h-4 sm:w-5 sm:h-5"
+          />
+          <span className="text-sm sm:text-base font-semibold">
+            Back to Homepage
+          </span>
         </Link>
       </nav>
-      <div className="flex flex-row w-full max-lg:flex-col-reverse gap-8 p-4 min-h-screen">
-        <section className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="flex flex-row w-full max-lg:flex-col-reverse gap-4 sm:gap-8 p-2 sm:p-4 min-h-screen">
+        <section className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-[50vh] sm:min-h-screen">
           {imageUrl && resumeUrl && (
-            <div className="animate-in fade-in duration-1000 gradient-border max-sm:m-0 h-[90%] max-wxl:h-fit w-fit shadow-xl">
+            <div className="animate-in fade-in duration-1000 gradient-border max-sm:m-0 h-[80%] sm:h-[90%] max-wxl:h-fit w-fit shadow-xl">
               <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
                 <img
                   src={imageUrl}
@@ -75,12 +81,12 @@ const Resume = () => {
             </div>
           )}
         </section>
-        <section className="flex-1 p-8">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8 text-center">
+        <section className="flex-1 p-4 sm:p-8">
+          <h2 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">
             Resume Analysis Results
           </h2>
           {feedback ? (
-            <div className="flex flex-col gap-8 animate-in fade-in duration-1000 bg-white rounded-lg shadow-md p-6">
+            <div className="flex flex-col gap-6 sm:gap-8 animate-in fade-in duration-1000 bg-white rounded-lg shadow-md p-4 sm:p-6">
               <Summary feedback={feedback} />
               <ATS
                 score={feedback.ATS.score || 0}
@@ -89,9 +95,12 @@ const Resume = () => {
               <Details feedback={feedback} />
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4">
-              <img src="/images/resume-scan.gif" className="w-full max-w-md" />
-              <p className="text-gray-600 text-center">
+            <div className="flex flex-col items-center gap-4 p-4">
+              <img
+                src="/images/resume-scan.gif"
+                className="w-full max-w-xs sm:max-w-md"
+              />
+              <p className="text-sm sm:text-base text-gray-600 text-center px-4">
                 Analyzing your resume...
               </p>
             </div>
