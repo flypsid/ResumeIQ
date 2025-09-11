@@ -31,14 +31,28 @@ const Upload = () => {
   }) => {
     setIsProcessing(true);
 
+    // Validate file before processing
+    if (!file || file.size === 0) {
+      return setStatusText("Error: Invalid or empty file");
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      // 20MB limit
+      return setStatusText("Error: File size exceeds 20MB limit");
+    }
+
     setStatusText("Uploading the file...");
     const uploadedFile = await fs.upload([file]);
     if (!uploadedFile) return setStatusText("Error: Failed to upload file");
 
     setStatusText("Converting to image...");
     const imageFile = await convertPdfToImage(file);
-    if (!imageFile.file)
-      return setStatusText("Error: Failed to convert PDF to image");
+    if (!imageFile.file) {
+      console.error("PDF conversion failed:", imageFile.error);
+      return setStatusText(
+        `Error: ${imageFile.error || "Failed to convert PDF to image"}`
+      );
+    }
 
     setStatusText("Uploading the image...");
     const uploadedImage = await fs.upload([imageFile.file]);
