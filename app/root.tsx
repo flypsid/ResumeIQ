@@ -38,6 +38,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>ResumeIQ - Smart Resume Analysis Platform</title>
+        <meta
+          name="description"
+          content="Get AI-powered resume analysis, ATS compatibility scoring, and personalized recommendations to optimize your resume for job applications."
+        />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://resume.rfx.life" />
+        <meta
+          property="og:title"
+          content="ResumeIQ - Smart Resume Analysis Platform"
+        />
+        <meta
+          property="og:description"
+          content="Get AI-powered resume analysis, ATS compatibility scoring, and personalized recommendations to optimize your resume for job applications."
+        />
+        <meta
+          property="og:image"
+          content="https://resume.rfx.life/images/logo.jpg"
+        />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://resume.rfx.life" />
+        <meta
+          property="twitter:title"
+          content="ResumeIQ - Smart Resume Analysis Platform"
+        />
+        <meta
+          property="twitter:description"
+          content="Get AI-powered resume analysis, ATS compatibility scoring, and personalized recommendations to optimize your resume for job applications."
+        />
+        <meta
+          property="twitter:image"
+          content="https://resume.rfx.life/images/logo.jpg"
+        />
+
         <Meta />
         <Links />
       </head>
