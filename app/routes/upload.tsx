@@ -73,22 +73,70 @@ const Upload = () => {
 
     setStatusText("Analyzing...");
 
-    const feedback = await ai.feedback(
-      uploadedFile.path,
-      prepareInstructions({ jobTitle, jobDescription })
-    );
-    if (!feedback) return setStatusText("Error: Failed to analyze resume");
+    try {
+      const feedback = await ai.feedback(
+        uploadedFile.path,
+        prepareInstructions({ jobTitle, jobDescription })
+      );
 
-    const feedbackText =
-      typeof feedback.message.content === "string"
-        ? feedback.message.content
-        : feedback.message.content[0].text;
+      if (!feedback) {
+        setIsProcessing(false);
+        return setStatusText(
+          "Error: Failed to analyze resume - no response from AI"
+        );
+      }
 
-    data.feedback = JSON.parse(feedbackText);
-    await kv.set(`resume:${uuid}`, JSON.stringify(data));
-    setStatusText("Analysis complete, redirecting...");
-    console.log(data);
-    navigate(`/resume/${uuid}`);
+      console.log("AI Response:", feedback);
+
+      const feedbackText =
+        typeof feedback.message.content === "string"
+          ? feedback.message.content
+          : feedback.message.content[0].text;
+
+      // Clean the response - remove markdown code blocks if present
+      let cleanedJson = feedbackText.trim();
+      if (cleanedJson.startsWith("```json")) {
+        cleanedJson = cleanedJson.slice(7); // Remove ```json
+      } else if (cleanedJson.startsWith("```")) {
+        cleanedJson = cleanedJson.slice(3); // Remove ```
+      }
+      if (cleanedJson.endsWith("```")) {
+        cleanedJson = cleanedJson.slice(0, -3); // Remove trailing ```
+      }
+      cleanedJson = cleanedJson.trim();
+
+      console.log("Cleaned JSON:", cleanedJson.substring(0, 100) + "...");
+      data.feedback = JSON.parse(cleanedJson);
+      await kv.set(`resume:${uuid}`, JSON.stringify(data));
+      setStatusText("Analysis complete, redirecting...");
+      console.log(data);
+      navigate(`/resume/${uuid}`);
+    } catch (error) {
+      console.error("AI Analysis error:", error);
+      console.error(
+        "AI Analysis error (stringified):",
+        JSON.stringify(error, null, 2)
+      );
+      console.error(
+        "AI Analysis error keys:",
+        error && typeof error === "object"
+          ? Object.keys(error)
+          : "not an object"
+      );
+      setIsProcessing(false);
+      // Try to extract message from different error formats
+      let errorMessage: string;
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error && typeof error === "object" && "message" in error) {
+        errorMessage = String((error as { message: unknown }).message);
+      } else if (error && typeof error === "object" && "error" in error) {
+        errorMessage = String((error as { error: unknown }).error);
+      } else {
+        errorMessage = JSON.stringify(error);
+      }
+      setStatusText(`Error: ${errorMessage}`);
+    }
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
