@@ -1,3 +1,9 @@
+/** Model used for the resume analysis (see the Puter.js model catalog). */
+export const AI_MODEL = "claude-sonnet-5-5";
+
+/** Maximum accepted resume file size (20 MB). */
+export const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
 export const AIResponseFormat = `
       interface Feedback {
       overallScore: number; //max 100

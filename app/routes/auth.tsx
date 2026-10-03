@@ -10,12 +10,14 @@ export const meta = () => [
 const Auth = () => {
   const { isLoading, auth } = usePuterStore();
   const location = useLocation();
-  const next = location.search.split("next=")[1];
+  const requestedNext = new URLSearchParams(location.search).get("next");
+  // Only allow internal paths, to avoid an open redirect.
+  const next = requestedNext?.startsWith("/") ? requestedNext : "/upload";
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (auth.isAuthenticated) navigate(next);
-  }, [auth.isAuthenticated, next]);
+    if (auth.isAuthenticated) navigate(next, { replace: true });
+  }, [auth.isAuthenticated, next, navigate]);
 
   return (
     <main className="bg-[url('/images/bgmain.jpg')] bg-cover min-h-screen flex items-center justify-center">

@@ -4,8 +4,9 @@ import FileUploader from "../components/FileUploader";
 import { usePuterStore } from "../lib/puter";
 import { useNavigate } from "react-router";
 import { convertPdfToImage } from "../lib/pdf2img";
-import { generateUUID } from "../lib/utils";
-import { prepareInstructions } from "../../constants";
+import { generateUUID, getErrorMessage } from "../lib/utils";
+import { feedbackSchema } from "../lib/schemas";
+import { MAX_FILE_SIZE, prepareInstructions } from "../../constants";
 
 const Upload = () => {
   const { auth, isLoading, fs, ai, kv } = usePuterStore();
@@ -29,113 +30,87 @@ const Upload = () => {
     jobDescription: string;
     file: File;
   }) => {
-    setIsProcessing(true);
-
-    // Validate file before processing
+    // Validate before flipping the UI into the processing state, otherwise a
+    // validation error would leave the screen stuck on the loader.
     if (!file || file.size === 0) {
       return setStatusText("Error: Invalid or empty file");
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      // 20MB limit
+    if (file.size > MAX_FILE_SIZE) {
       return setStatusText("Error: File size exceeds 20MB limit");
     }
 
+    setIsProcessing(true);
     setStatusText("Uploading the file...");
-    const uploadedFile = await fs.upload([file]);
-    if (!uploadedFile) return setStatusText("Error: Failed to upload file");
-
-    setStatusText("Converting to image...");
-    const imageFile = await convertPdfToImage(file);
-    if (!imageFile.file) {
-      console.error("PDF conversion failed:", imageFile.error);
-      return setStatusText(
-        `Error: ${imageFile.error || "Failed to convert PDF to image"}`
-      );
-    }
-
-    setStatusText("Uploading the image...");
-    const uploadedImage = await fs.upload([imageFile.file]);
-    if (!uploadedImage) return setStatusText("Error: Failed to upload image");
-
-    setStatusText("Preparing data...");
-    const uuid = generateUUID();
-    const data = {
-      id: uuid,
-      resumePath: uploadedFile.path,
-      imagePath: uploadedImage.path,
-      companyName,
-      jobTitle,
-      jobDescription,
-      feedback: "",
-    };
-    await kv.set(`resume:${uuid}`, JSON.stringify(data));
-
-    setStatusText("Analyzing...");
-
     try {
+      const uploadedFile = await fs.upload([file]);
+      if (!uploadedFile) throw new Error("Failed to upload file");
+
+      setStatusText("Converting to image...");
+      const imageFile = await convertPdfToImage(file);
+      if (!imageFile.file) {
+        console.error("PDF conversion failed:", imageFile.error);
+        throw new Error(imageFile.error || "Failed to convert PDF to image");
+      }
+
+      setStatusText("Uploading the image...");
+      const uploadedImage = await fs.upload([imageFile.file]);
+      if (!uploadedImage) throw new Error("Failed to upload image");
+
+      setStatusText("Preparing data...");
+      const uuid = generateUUID();
+      const data: StoredResume = {
+        id: uuid,
+        resumePath: uploadedFile.path,
+        imagePath: uploadedImage.path,
+        companyName,
+        jobTitle,
+        jobDescription,
+        feedback: "",
+      };
+      await kv.set(`resume:${uuid}`, JSON.stringify(data));
+
+      setStatusText("Analyzing...");
+
       const feedback = await ai.feedback(
         uploadedFile.path,
         prepareInstructions({ jobTitle, jobDescription })
       );
 
       if (!feedback) {
-        setIsProcessing(false);
-        return setStatusText(
-          "Error: Failed to analyze resume - no response from AI"
-        );
+        throw new Error("Failed to analyze resume - no response from AI");
       }
 
-      console.log("AI Response:", feedback);
+      const feedbackText = Array.isArray(feedback.message.content)
+        ? feedback.message.content
+            .map((block) => (typeof block?.text === "string" ? block.text : ""))
+            .join("")
+        : feedback.message.content;
 
-      const feedbackText =
-        typeof feedback.message.content === "string"
-          ? feedback.message.content
-          : feedback.message.content[0].text;
-
-      // Clean the response - remove markdown code blocks if present
-      let cleanedJson = feedbackText.trim();
-      if (cleanedJson.startsWith("```json")) {
-        cleanedJson = cleanedJson.slice(7); // Remove ```json
-      } else if (cleanedJson.startsWith("```")) {
-        cleanedJson = cleanedJson.slice(3); // Remove ```
+      // Robustly extract the JSON object, even when the model wraps it in
+      // markdown fences or adds text before/after it.
+      const jsonMatch = feedbackText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("The AI response did not contain a JSON object.");
       }
-      if (cleanedJson.endsWith("```")) {
-        cleanedJson = cleanedJson.slice(0, -3); // Remove trailing ```
-      }
-      cleanedJson = cleanedJson.trim();
 
-      console.log("Cleaned JSON:", cleanedJson.substring(0, 100) + "...");
-      data.feedback = JSON.parse(cleanedJson);
+      // Runtime validation: the results page reads feedback.ATS.score,
+      // feedback.toneAndStyle.tips, ... directly, so a malformed payload
+      // would crash the UI.
+      const parsedFeedback: Feedback = feedbackSchema.parse(
+        JSON.parse(jsonMatch[0])
+      );
+
+      data.feedback = parsedFeedback;
       await kv.set(`resume:${uuid}`, JSON.stringify(data));
       setStatusText("Analysis complete, redirecting...");
-      console.log(data);
       navigate(`/resume/${uuid}`);
     } catch (error) {
       console.error("AI Analysis error:", error);
-      console.error(
-        "AI Analysis error (stringified):",
-        JSON.stringify(error, null, 2)
-      );
-      console.error(
-        "AI Analysis error keys:",
-        error && typeof error === "object"
-          ? Object.keys(error)
-          : "not an object"
-      );
+      setStatusText(`Error: ${getErrorMessage(error)}`);
+    } finally {
+      // Always release the loader, whatever failed.
       setIsProcessing(false);
-      // Try to extract message from different error formats
-      let errorMessage: string;
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error && typeof error === "object" && "message" in error) {
-        errorMessage = String((error as { message: unknown }).message);
-      } else if (error && typeof error === "object" && "error" in error) {
-        errorMessage = String((error as { error: unknown }).error);
-      } else {
-        errorMessage = JSON.stringify(error);
-      }
-      setStatusText(`Error: ${errorMessage}`);
     }
   };
 

@@ -1,33 +1,45 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { usePuterStore } from "~/lib/puter";
 
 const WipeApp = () => {
-  const { auth, isLoading, error, clearError, fs, ai, kv } = usePuterStore();
+  const { auth, isLoading, error, fs, kv } = usePuterStore();
   const navigate = useNavigate();
   const [files, setFiles] = useState<FSItem[]>([]);
+  const [isWiping, setIsWiping] = useState(false);
 
-  const loadFiles = async () => {
-    const files = (await fs.readDir("./")) as FSItem[];
-    setFiles(files);
-  };
-
-  useEffect(() => {
-    loadFiles();
-  }, []);
+  const loadFiles = useCallback(async () => {
+    const items = (await fs.readDir("./")) as FSItem[] | undefined;
+    setFiles(items ?? []);
+  }, [fs]);
 
   useEffect(() => {
     if (!isLoading && !auth.isAuthenticated) {
-      navigate("/auth?next=/wipe");
+      navigate("/auth?next=/wipe", { replace: true });
+      return;
     }
-  }, [isLoading]);
+
+    if (auth.isAuthenticated) loadFiles();
+  }, [isLoading, auth.isAuthenticated, navigate, loadFiles]);
 
   const handleDelete = async () => {
-    files.forEach(async (file) => {
-      await fs.delete(file.path);
-    });
-    await kv.flush();
-    loadFiles();
+    if (
+      !window.confirm(
+        "Delete all files and key-value entries? This cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setIsWiping(true);
+    try {
+      // forEach + async would fire un-awaited deletions; await them all.
+      await Promise.all(files.map((file) => fs.delete(file.path)));
+      await kv.flush();
+      await loadFiles();
+    } finally {
+      setIsWiping(false);
+    }
   };
 
   if (isLoading) {
@@ -51,10 +63,11 @@ const WipeApp = () => {
       </div>
       <div>
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer"
-          onClick={() => handleDelete()}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer disabled:opacity-50"
+          onClick={handleDelete}
+          disabled={isWiping}
         >
-          Wipe App Data
+          {isWiping ? "Wiping..." : "Wipe App Data"}
         </button>
       </div>
     </div>

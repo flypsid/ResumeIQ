@@ -2,6 +2,7 @@ interface Resume {
   id: string;
   companyName?: string;
   jobTitle?: string;
+  jobDescription?: string;
   imagePath: string;
   resumePath: string;
   feedback: Feedback;
@@ -49,3 +50,10 @@ interface Feedback {
     }[];
   };
 }
+
+/**
+ * Resume record as persisted in the KV store: `feedback` stays an empty string
+ * while the analysis is still running (or if it failed).
+ */
+type StoredResume = Omit<Resume, "feedback"> & { feedback: Feedback | "" };
+

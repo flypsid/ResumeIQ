@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { formatSize } from "../lib/utils";
+import { MAX_FILE_SIZE } from "../../constants";
 
 interface FileUploaderProps {
   onFileSelect?: (file: File | null) => void;
@@ -17,15 +18,12 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
     [onFileSelect]
   );
 
-  const maxFileSize = 20 * 1024 * 1024; // 20MB in bytes
-
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
-    useDropzone({
-      onDrop,
-      multiple: false,
-      accept: { "application/pdf": [".pdf"] },
-      maxSize: maxFileSize,
-    });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: { "application/pdf": [".pdf"] },
+    maxSize: MAX_FILE_SIZE,
+  });
 
   const file = selectedFile;
 
@@ -33,6 +31,15 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
     <div className="w-full">
       <div
         {...getRootProps()}
+        role="button"
+        tabIndex={0}
+        aria-label="Upload your resume (PDF)"
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.currentTarget.click();
+          }
+        }}
         className={`border-2 border-dashed rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200 ${
           isDragActive
             ? "border-blue-500 bg-blue-50 scale-105"
@@ -108,7 +115,7 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
                   or drag and drop
                 </p>
                 <p className="text-sm text-gray-500">
-                  PDF files only (max {formatSize(maxFileSize)})
+                  PDF files only (max {formatSize(MAX_FILE_SIZE)})
                 </p>
               </div>
             </div>
